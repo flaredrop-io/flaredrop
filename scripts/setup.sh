@@ -5,24 +5,18 @@ echo "FlareDrop Setup"
 echo "==============="
 echo ""
 
-# Check if wrangler is available
-if ! command -v wrangler &> /dev/null; then
-    echo "Error: wrangler CLI not found. Install it with: npm install -g wrangler"
-    exit 1
-fi
-
 # Check if logged in
-if ! wrangler whoami &> /dev/null; then
+if ! npx wrangler whoami &> /dev/null; then
     echo "Please login to Cloudflare first:"
-    wrangler login
+    npx wrangler login
 fi
 
 echo ""
 echo "Creating D1 database..."
-D1_OUTPUT=$(wrangler d1 create flaredrop-db 2>&1) || {
+D1_OUTPUT=$(npx wrangler d1 create flaredrop-db 2>&1) || {
     if echo "$D1_OUTPUT" | grep -q "already exists"; then
         echo "D1 database 'flaredrop-db' already exists, fetching info..."
-        D1_OUTPUT=$(wrangler d1 info flaredrop-db 2>&1)
+        D1_OUTPUT=$(npx wrangler d1 info flaredrop-db 2>&1)
     else
         echo "Error creating D1 database: $D1_OUTPUT"
         exit 1
@@ -44,10 +38,10 @@ echo "D1 database ID: $D1_ID"
 
 echo ""
 echo "Creating KV namespace..."
-KV_OUTPUT=$(wrangler kv:namespace create FILES 2>&1) || {
+KV_OUTPUT=$(npx wrangler kv:namespace create FILES 2>&1) || {
     if echo "$KV_OUTPUT" | grep -q "already exists"; then
         echo "KV namespace 'FILES' already exists, fetching info..."
-        KV_OUTPUT=$(wrangler kv:namespace list 2>&1)
+        KV_OUTPUT=$(npx wrangler kv:namespace list 2>&1)
         KV_ID=$(echo "$KV_OUTPUT" | grep -oP '"id":\s*"[^"]+flaredrop[^"]*"' | grep -oP '[a-f0-9]{32}' | head -1)
         if [ -z "$KV_ID" ]; then
             KV_ID=$(echo "$KV_OUTPUT" | grep -B2 -A2 "FILES" | grep -oP '[a-f0-9]{32}' | head -1)

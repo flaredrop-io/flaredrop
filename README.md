@@ -17,7 +17,6 @@ Self-hostable AirDrop alternative powered by Cloudflare Workers.
 
 - Cloudflare account with Workers enabled
 - Domain with Cloudflare Email Routing configured
-- Wrangler CLI installed (`npm install -g wrangler`)
 
 ### Installation
 
