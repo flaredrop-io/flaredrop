@@ -52,13 +52,7 @@ wrangler kv:namespace create FILES
 
 6. Update `wrangler.toml` with the KV namespace ID.
 
-7. Initialize the database:
-
-```bash
-npm run db:init:remote
-```
-
-8. Deploy:
+7. Deploy:
 
 ```bash
 npm run deploy

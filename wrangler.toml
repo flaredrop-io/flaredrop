@@ -23,3 +23,7 @@ bindings = [
 [[migrations]]
 tag = "v1"
 new_classes = ["RelayDurableObject"]
+
+# Scheduled cleanup (runs daily at midnight UTC)
+[triggers]
+crons = ["0 0 * * *"]

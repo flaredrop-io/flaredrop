@@ -24,11 +24,24 @@ import {
   SharedData
 } from './ui';
 import { generateId } from './utils';
+import { initializeDatabase, cleanupExpiredData } from './db';
 
 export { RelayDurableObject };
 
+// Track initialization state per isolate
+let dbInitialized = false;
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    // Auto-initialize database on first request
+    if (!dbInitialized) {
+      await initializeDatabase(env);
+      dbInitialized = true;
+
+      // Schedule cleanup in background (runs occasionally)
+      ctx.waitUntil(cleanupExpiredData(env));
+    }
+
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
@@ -328,6 +341,12 @@ export default {
         'UPDATE auth_tokens SET email = ? WHERE token = ?'
       ).bind(from, token).run();
     }
+  },
+
+  // Scheduled cleanup (runs via Cron Trigger)
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    await initializeDatabase(env);
+    await cleanupExpiredData(env);
   }
 };
 
