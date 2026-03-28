@@ -4,6 +4,7 @@
   "description": "Self-hostable AirDrop alternative on Cloudflare Workers",
   "type": "module",
   "scripts": {
+    "setup": "bash scripts/setup.sh",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "test": "vitest run",

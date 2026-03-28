@@ -29,30 +29,13 @@ cd flaredrop
 npm install
 ```
 
-2. Configure your authorized email in `wrangler.toml`:
-
-```toml
-[vars]
-AUTHORIZED_EMAIL = "your-email@example.com"
-```
-
-3. Create D1 database:
+2. Run the setup script (creates D1 database, KV namespace, and configures wrangler.toml):
 
 ```bash
-wrangler d1 create flaredrop-db
+npm run setup
 ```
 
-4. Update `wrangler.toml` with the database ID from the output.
-
-5. Create KV namespace:
-
-```bash
-wrangler kv:namespace create FILES
-```
-
-6. Update `wrangler.toml` with the KV namespace ID.
-
-7. Deploy:
+3. Deploy:
 
 ```bash
 npm run deploy
