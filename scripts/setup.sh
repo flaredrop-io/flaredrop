@@ -5,18 +5,19 @@ echo "FlareDrop Setup"
 echo "==============="
 echo ""
 
-# Check if logged in
-if ! npx wrangler@latest whoami &> /dev/null; then
-    echo "Please login to Cloudflare first:"
-    npx wrangler@latest login
+echo "Checking Cloudflare authentication..."
+if ! npx -y wrangler@latest whoami 2>/dev/null | grep -q "You are logged in"; then
+    echo "Please login to Cloudflare:"
+    npx -y wrangler@latest login
 fi
+echo "Authenticated!"
 
 echo ""
 echo "Creating D1 database..."
-D1_OUTPUT=$(npx wrangler@latest d1 create flaredrop-db 2>&1) || {
+D1_OUTPUT=$(npx -y wrangler@latest d1 create flaredrop-db 2>&1) || {
     if echo "$D1_OUTPUT" | grep -q "already exists"; then
         echo "D1 database 'flaredrop-db' already exists, fetching info..."
-        D1_OUTPUT=$(npx wrangler@latest d1 info flaredrop-db 2>&1)
+        D1_OUTPUT=$(npx -y wrangler@latest d1 info flaredrop-db 2>&1)
     else
         echo "Error creating D1 database: $D1_OUTPUT"
         exit 1
@@ -38,10 +39,10 @@ echo "D1 database ID: $D1_ID"
 
 echo ""
 echo "Creating KV namespace..."
-KV_OUTPUT=$(npx wrangler@latest kv:namespace create FILES 2>&1) || {
+KV_OUTPUT=$(npx -y wrangler@latest kv:namespace create FILES 2>&1) || {
     if echo "$KV_OUTPUT" | grep -q "already exists"; then
         echo "KV namespace 'FILES' already exists, fetching info..."
-        KV_OUTPUT=$(npx wrangler@latest kv:namespace list 2>&1)
+        KV_OUTPUT=$(npx -y wrangler@latest kv:namespace list 2>&1)
         KV_ID=$(echo "$KV_OUTPUT" | grep -oP '"id":\s*"[^"]+flaredrop[^"]*"' | grep -oP '[a-f0-9]{32}' | head -1)
         if [ -z "$KV_ID" ]; then
             KV_ID=$(echo "$KV_OUTPUT" | grep -B2 -A2 "FILES" | grep -oP '[a-f0-9]{32}' | head -1)
