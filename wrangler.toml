@@ -1,0 +1,25 @@
+name = "flaredrop"
+main = "src/index.ts"
+compatibility_date = "2024-05-01"
+
+[vars]
+# Set your authorized email address during deployment
+# AUTHORIZED_EMAIL = "your-email@example.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "flaredrop-db"
+database_id = "local"
+
+[[kv_namespaces]]
+binding = "FILES"
+id = "files-kv"
+
+[durable_objects]
+bindings = [
+  { name = "RELAY", class_name = "RelayDurableObject" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["RelayDurableObject"]
