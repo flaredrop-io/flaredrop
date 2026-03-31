@@ -5,41 +5,18 @@ echo "FlareDrop Setup"
 echo "==============="
 echo ""
 
-# Check for API token environment variable
-if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
-    echo "Warning: CLOUDFLARE_API_TOKEN environment variable detected."
-    echo "API tokens require D1 and KV permissions for setup."
-    echo ""
-    read -p "Use OAuth login instead? (recommended) [Y/n]: " USE_OAUTH
-    if [ "$USE_OAUTH" != "n" ] && [ "$USE_OAUTH" != "N" ]; then
-        unset CLOUDFLARE_API_TOKEN
-        echo "Switching to OAuth login..."
-        npx -y wrangler@latest login
-    fi
-    echo ""
-fi
+# Clear any API token to use OAuth
+unset CLOUDFLARE_API_TOKEN
 
-echo "Checking Cloudflare authentication..."
-if ! npx -y wrangler@latest whoami 2>/dev/null | grep -q "logged in"; then
-    echo "Please login to Cloudflare:"
-    npx -y wrangler@latest login
-fi
-echo "Authenticated!"
-
+echo "Logging in to Cloudflare..."
+npx -y wrangler@latest login
 echo ""
+
 echo "Creating D1 database..."
 D1_OUTPUT=$(npx -y wrangler@latest d1 create flaredrop-db 2>&1) || {
     if echo "$D1_OUTPUT" | grep -q "already exists"; then
         echo "D1 database 'flaredrop-db' already exists, fetching info..."
         D1_OUTPUT=$(npx -y wrangler@latest d1 info flaredrop-db 2>&1)
-    elif echo "$D1_OUTPUT" | grep -q "Authentication error"; then
-        echo ""
-        echo "Error: Authentication failed. Your API token may lack D1 permissions."
-        echo "Please either:"
-        echo "  1. Update your API token at https://dash.cloudflare.com/profile/api-tokens"
-        echo "     Required permissions: D1 Edit, Workers KV Storage Edit"
-        echo "  2. Or run: unset CLOUDFLARE_API_TOKEN && npm run setup"
-        exit 1
     else
         echo "Error creating D1 database:"
         echo "$D1_OUTPUT"
@@ -70,12 +47,6 @@ KV_OUTPUT=$(npx -y wrangler@latest kv:namespace create FILES 2>&1) || {
         if [ -z "$KV_ID" ]; then
             KV_ID=$(echo "$KV_OUTPUT" | grep -B2 -A2 "FILES" | grep -oP '[a-f0-9]{32}' | head -1)
         fi
-    elif echo "$KV_OUTPUT" | grep -q "Authentication error"; then
-        echo ""
-        echo "Error: Authentication failed. Your API token may lack KV permissions."
-        echo "Please update your API token at https://dash.cloudflare.com/profile/api-tokens"
-        echo "Required permissions: Workers KV Storage Edit"
-        exit 1
     else
         echo "Error creating KV namespace:"
         echo "$KV_OUTPUT"
